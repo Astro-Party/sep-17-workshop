@@ -1,16 +1,22 @@
 ---
+import '@fontsource-variable/urbanist';
+import '../styles/global.css';
+import Layout from '../layouts/default.astro';
+import Callout from '../components/callout.astro';
+import { Counter } from '../components/counter.react';
 
+const title = 'Astro Party';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title={title}>
+	<h1>{title}</h1>
+
+	<p>
+		Click this button for luck:
+		<Counter client:visible />
+	</p>
+
+	<Callout icon="🔥" iconDescription="fire">
+		<p>Oh dang, look at this!</p>
+	</Callout>
+</Layout>

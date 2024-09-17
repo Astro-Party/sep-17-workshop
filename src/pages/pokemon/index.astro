@@ -1,0 +1,64 @@
+---
+import Layout from '../../layouts/default.astro';
+import PokemonPreview from '../../components/pokemon-preview.astro';
+
+export const prerender = false;
+
+const ITEMS_PER_PAGE = import.meta.env.ITEMS_PER_PAGE;
+
+const apiUrl = new URL('https://pokeapi.co/');
+apiUrl.pathname = '/api/v2/pokemon';
+apiUrl.searchParams.set('limit', ITEMS_PER_PAGE);
+
+const page = Number(Astro.url.searchParams.get('page') ?? 1);
+apiUrl.searchParams.set('offset', ((page - 1) * ITEMS_PER_PAGE).toString());
+
+const response = await fetch(apiUrl);
+
+if (!response.ok) {
+	throw new Error('failed to fetch list of Pokémon');
+}
+
+const title = 'Pokémon';
+const pokemonList = await response.json();
+
+const maxPages = Math.floor(pokemonList.count / ITEMS_PER_PAGE);
+
+const prevPage = page > 1 ? Math.max(page - 1, 1) : false;
+const prevUrl = new URL(Astro.url);
+prevUrl.searchParams.set('page', prevPage.toString());
+
+const nextPage = page < maxPages ? Math.min(page + 1, maxPages) : false;
+const nextUrl = new URL(Astro.url);
+nextUrl.searchParams.set('page', nextPage.toString());
+---
+
+<Layout title={title}>
+	<h1>{title}</h1>
+
+	<section class="box">
+		<ul class="list flex">
+			{
+				pokemonList.results.map((pokemon: { name: string }) => {
+					return (
+						<li>
+							<PokemonPreview pokemon={pokemon.name} server:defer>
+								<div slot="fallback">
+									<div class="poke-placeholder-img" />
+									<span class="poke-placeholder-text" />
+								</div>
+							</PokemonPreview>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</section>
+
+	<section>
+		<nav class="subnav flex">
+			{prevPage !== false ? <a href={prevUrl}>&larr; previous page</a> : null}
+			{nextPage !== false ? <a href={nextUrl}>next page &rarr;</a> : null}
+		</nav>
+	</section>
+</Layout>
